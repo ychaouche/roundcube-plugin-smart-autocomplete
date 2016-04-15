@@ -23,7 +23,7 @@
     },
     "extra": {
         "roundcube": {
-            "min-version": "1.2.1",
+            "min-version": "1.1.0",
             "sql-dir": "SQL",
             "post-install-script": "echo 'POST-INSTALL SCRIPT'",
             "post-update-script": "echo 'POST-UPDATE SCRIPT'"
