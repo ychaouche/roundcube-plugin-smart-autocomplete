@@ -1,7 +1,7 @@
 <?php
-/**
- * This doesn't do anything.
- */
+
+
+
 class smart_autocomplete extends rcube_plugin
 {
 
