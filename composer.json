@@ -1,0 +1,32 @@
+{
+    "name": "teon/smart_autocomplete",
+    "type": "roundcube-plugin",
+    "description": "Find your recipients faster by optimizing autocomplete order",
+    "homepage": "https://github.com/teonsystems/roundcube-plugin-smart-autocomplete/",
+    "license": "AGPL-3.0",
+    "authors": [
+        {
+            "name": "Bostjan Skufca",
+            "email": "bostjan@teon.si",
+            "role": "lead"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://plugins.roundcube.net"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "roundcube/plugin-installer": ">=0.1.7"
+    },
+    "extra": {
+        "roundcube": {
+            "min-version": "1.2.1",
+            "sql-dir": "SQL",
+            "post-install-script": "echo 'POST-INSTALL SCRIPT'",
+            "post-update-script": "echo 'POST-UPDATE SCRIPT'"
+        }
+    }
+}
