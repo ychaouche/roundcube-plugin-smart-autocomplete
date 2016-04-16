@@ -94,20 +94,30 @@ class smart_autocomplete extends rcube_plugin
 
 
     /**
-     * Generate IDs for RC suggestions
+     * Generate uniq IDs for RC suggestions
      */
     protected function _rc_suggestions_generate_uniq_ids ($rc_suggestions)
     {
         $rc_suggestions_assoc = array();
         foreach ($rc_suggestions as $rc_suggestion) {
-            if ('group' == $rc_suggestion['type']) {
-                $contact_uniq_id = $rc_suggestion['source'] .'-group-'. $rc_suggestion['id'];
-            } else {
-                $contact_uniq_id = $rc_suggestion['source'] .'-person-'. $rc_suggestion['id'] .'-'. $rc_suggestion['email'];
-            }
+            $contact_uniq_id = $this->_generate_uniq_id($rc_suggestion);
             $rc_suggestions_assoc[$contact_uniq_id] = $rc_suggestion;
         }
         return $rc_suggestions_assoc;
+    }
+
+
+    /**
+     * Generate uniq ID for contact
+     */
+    protected function _generate_uniq_id ($contact_data)
+    {
+        if ('group' == $contact_data['type']) {
+            $contact_uniq_id = $contact_data['source'] .'-group-'. $contact_data['id'];
+        } else {
+            $contact_uniq_id = $contact_data['source'] .'-person-'. $contact_data['id'] .'-'. $contact_data['email'];
+        }
+        return $contact_uniq_id;
     }
 
 
@@ -159,14 +169,13 @@ class smart_autocomplete extends rcube_plugin
                 $abook->reset();
 
                 $contact = array(
-                    'name'   => $group_data['name'] . ' (' . intval($group_members_count) . ')',
                     'type'   => 'group',
+                    'name'   => $group_data['name'] . ' (' . intval($group_members_count) . ')',
                     'id'     => $suggestion['accepted_id'],
                     'source' => $suggestion['accepted_source'],
                 );
 
-                $contact_uniq_id = $suggestion['accepted_source'] .'-group-'. $suggestion['accepted_id'];
-
+                $contact_uniq_id = $this->_generate_uniq_id($contact);
             }
             // Handle: regular person
             else {
@@ -187,14 +196,14 @@ class smart_autocomplete extends rcube_plugin
                 $contact_name = format_email_recipient($email, $name_tmp);
 
                 $contact = array(
+                    'type'   => 'person',
                     'name'   => $contact_name,
                     'email'  => $email,
-                    'type'   => 'person',
                     'id'     => $suggestion['accepted_id'],
                     'source' => $suggestion['accepted_source'],
                 );
 
-                $contact_uniq_id = $suggestion['accepted_source'] .'-person-'. $suggestion['accepted_id'] .'-'. $email;
+                $contact_uniq_id = $this->_generate_uniq_id($contact);
             }
 
             $contacts[$contact_uniq_id] = $contact;
