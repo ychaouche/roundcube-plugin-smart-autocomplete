@@ -39,3 +39,4 @@ Roundcube version FIXME
     RC from scratch at any time
 - check automatic addressbook (autocomplete only works for addresses in address book?)
 - implement minimun search string length?
+- searchstring sanitization before using it in queries
