@@ -27,7 +27,9 @@ display correct contact as first autocomplete suggestion for both occasions.
 
 ## Requirements
 
-Roundcube version FIXME
+Whichever RC release has this PR merged: https://github.com/roundcube/roundcubemail/pull/5203
+
+Expected to be merged in v1.1.5 and v1.2.0.
 
 
 
