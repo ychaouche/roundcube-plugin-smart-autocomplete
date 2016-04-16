@@ -60,16 +60,16 @@ class smart_autocomplete extends rcube_plugin
         $search_string  = $args['search'];
         $rc_suggestions = $args['contacts'];
 
-        // Generate array key values for RC suggestions, to be able to remove duplicates
-        $rc_suggestions = $this->_rc_suggestions_generate_ids($rc_suggestions);
+        // Generate array keys for RC suggestions, to be able to remove duplicates when merging
+        $rc_suggestions = $this->_rc_suggestions_generate_uniq_ids($rc_suggestions);
 
         // Search for learned autosuggestions
         $exact_matches  = $this->_search_for_matches($search_string, 'exact');
         $prefix_matches = $this->_search_for_matches($search_string, 'prefix');
 
-        // Format final contacts array, remove duplicates
-        $autocomplete_max = (int) $this->rc->config->get('autocomplete_max', 15);
-        $contacts_assoc = array_slice($exact_matches + $prefix_matches + $rc_suggestions, 0, $autocomplete_max);
+        // Merge final contacts array - later keys do not overwrite earlier ones,
+        // effectively shedding duplicates.
+        $contacts_assoc = $exact_matches + $prefix_matches + $rc_suggestions;
 
         // Ignore contacts with too long emails
         foreach ($contacts_assoc as $contact_id => $contact_data) {
@@ -80,7 +80,12 @@ class smart_autocomplete extends rcube_plugin
             }
         }
 
+        // Limit output to X entries, as configured in RC
+        $config_autocomplete_max = (int) $this->rc->config->get('autocomplete_max', 15);
+        $contacts_assoc = array_slice($contacts_assoc, 0, $config_autocomplete_max);
+
         // Replace associative keys with indexed ones
+        // (if not, autosuggestions stop working entirely as JSON does not support associative arrays)
         $contacts = array_values($contacts_assoc);
 
         return array('contacts' => $contacts);
@@ -91,7 +96,7 @@ class smart_autocomplete extends rcube_plugin
     /**
      * Generate IDs for RC suggestions
      */
-    protected function _rc_suggestions_generate_ids ($rc_suggestions)
+    protected function _rc_suggestions_generate_uniq_ids ($rc_suggestions)
     {
         $rc_suggestions_assoc = array();
         foreach ($rc_suggestions as $rc_suggestion) {
