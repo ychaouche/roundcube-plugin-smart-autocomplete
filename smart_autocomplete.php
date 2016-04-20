@@ -161,6 +161,7 @@ class smart_autocomplete extends rcube_plugin
             // Handle: group
             if ('group' == $suggestion['accepted_type']) {
 
+                $abook->reset();   // Stoopid RC internals
                 $group_data = $abook->get_group($suggestion['accepted_id']);
 
                 // If group is not found, remove all AC data about it
@@ -189,6 +190,7 @@ class smart_autocomplete extends rcube_plugin
             // Handle: regular person
             else {
 
+                $abook->reset();   // Stoopid RC internals
                 $contact_data = $abook->get_record($suggestion['accepted_id'], true);
 
                 // If group is not found, remove all AC data about it
@@ -218,6 +220,7 @@ class smart_autocomplete extends rcube_plugin
                 );
 
                 $contact_uniq_id = $this->_generate_uniq_id($contact);
+
             }
 
             $contacts[$contact_uniq_id] = $contact;
@@ -351,14 +354,14 @@ class smart_autocomplete extends rcube_plugin
     /*
      * ACTION: Callback for storing accepted autosuggestions via Ajax call
      */
-    protected function _delete_autocomplete_data ($type, $accepted_id, $accepted_source)
+    protected function _delete_autocomplete_data ($accepted_type, $accepted_id, $accepted_source)
     {
-        switch ($type) {
+        switch ($accepted_type) {
             case 'group':
             case 'person':
                 break;
             default:
-                throw new Exception("Unsupported contact type: $type");
+                throw new Exception("Unsupported contact type: '$accepted_type'");
         }
 
         $result = $this->rc->db->query(
