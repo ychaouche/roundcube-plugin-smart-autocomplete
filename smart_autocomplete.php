@@ -107,6 +107,7 @@ class smart_autocomplete extends rcube_plugin
     }
 
 
+
     /**
      * Generate uniq ID for contact
      */
@@ -119,6 +120,7 @@ class smart_autocomplete extends rcube_plugin
         }
         return $contact_uniq_id;
     }
+
 
 
     /**
