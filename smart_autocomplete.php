@@ -160,8 +160,14 @@ class smart_autocomplete extends rcube_plugin
 
             // Handle: group
             if ('group' == $suggestion['accepted_type']) {
+
                 $group_data = $abook->get_group($suggestion['accepted_id']);
-                // TODO FIXME add code to remove data about groups that are no longer present
+
+                // If group is not found, remove all AC data about it
+                if (NULL === $group_data) {
+                    $this->_delete_autocomplete_data('group', $suggestion['accepted_id'], $suggestion['accepted_source']);
+                    continue;
+                }
 
                 // Get group members count
                 $abook->reset();
@@ -178,12 +184,18 @@ class smart_autocomplete extends rcube_plugin
                 );
 
                 $contact_uniq_id = $this->_generate_uniq_id($contact);
+
             }
             // Handle: regular person
             else {
 
                 $contact_data = $abook->get_record($suggestion['accepted_id'], true);
-                // TODO FIXME add code to remove data about people that are no longer present
+
+                // If group is not found, remove all AC data about it
+                if (NULL === $contact_data) {
+                    $this->_delete_autocomplete_data('person', $suggestion['accepted_id'], $suggestion['accepted_source']);
+                    continue;
+                }
 
                 $email = $suggestion['accepted_email'];
                 // FIXME TODO Check if email is still present in the contact, otherwise use default/first one
@@ -332,5 +344,37 @@ class smart_autocomplete extends rcube_plugin
          * and delete them?
          * Now they even out eventually. Maybe once shorter prefix accepted_count is larger than longer one?
          */
+    }
+
+
+
+    /*
+     * ACTION: Callback for storing accepted autosuggestions via Ajax call
+     */
+    protected function _delete_autocomplete_data ($type, $accepted_id, $accepted_source)
+    {
+        switch ($type) {
+            case 'group':
+            case 'person':
+                break;
+            default:
+                throw new Exception("Unsupported contact type: $type");
+        }
+
+        $result = $this->rc->db->query(
+            "
+                DELETE FROM
+                    ". $this->db_table_name ."
+                WHERE 1
+                    AND user_id = ?
+                    AND accepted_type   = ?
+                    AND accepted_id     = ?
+                    AND accepted_source = ?
+            ",
+            $this->rc->user->ID,
+            $accepted_type,
+            $accepted_id,
+            $accepted_source
+        );
     }
 }
