@@ -208,9 +208,7 @@ class smart_autocomplete extends rcube_plugin
                 }
 
                 // Format contact
-                $name_tmp     = rcube_addressbook::compose_list_name($contact_data);
-                $contact_name = format_email_recipient($email, $name_tmp);
-
+                $contact_name = format_email_recipient($email, $name_search);
                 $contact = array(
                     'type'   => 'person',
                     'name'   => $contact_name,
@@ -218,6 +216,12 @@ class smart_autocomplete extends rcube_plugin
                     'id'     => $suggestion['accepted_id'],
                     'source' => $suggestion['accepted_source'],
                 );
+
+                $list_name    = rcube_addressbook::compose_list_name($contact_data);
+                $display_name = rcube_addressbook::compose_search_name($contact_data, $email, $name_list);
+                if ($display_name && ($display_name != $contact_data["name"])) {
+                    $contact["display"] = $display_name;
+                }
 
                 $contact_uniq_id = $this->_generate_uniq_id($contact);
 
