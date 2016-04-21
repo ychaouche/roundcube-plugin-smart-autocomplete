@@ -1,0 +1,101 @@
+diff --git a/program/js/app.js b/program/js/app.js
+index b5be135..41b0cd9 100644
+--- a/program/js/app.js
++++ b/program/js/app.js
+@@ -4567,7 +4567,8 @@ function rcube_webmail()
+     this.set_caret_pos(this.ksearch_input, p + insert.length);
+ 
+     if (trigger) {
+-      this.triggerEvent('autocomplete_insert', { field:this.ksearch_input, insert:insert, data:this.env.contacts[id] });
++      this.triggerEvent('autocomplete_insert', { field:this.ksearch_input, insert:insert, data:this.env.contacts[id], search:this.ksearch_value_last, result_type:'person' });
++      this.ksearch_value_last = null;
+       this.compose_type_activity++;
+     }
+   };
+@@ -4576,7 +4577,8 @@ function rcube_webmail()
+   {
+     if (this.group2expand[id]) {
+       this.group2expand[id].input.value = this.group2expand[id].input.value.replace(this.group2expand[id].name, recipients);
+-      this.triggerEvent('autocomplete_insert', { field:this.group2expand[id].input, insert:recipients });
++      this.triggerEvent('autocomplete_insert', { field:this.group2expand[id].input, insert:recipients, data:this.group2expand[id], search:this.ksearch_value_last, result_type:'group' });
++      this.ksearch_value_last = null;
+       this.group2expand[id] = null;
+       this.compose_type_activity++;
+     }
+@@ -4619,6 +4621,7 @@ function rcube_webmail()
+ 
+     var old_value = this.ksearch_value;
+     this.ksearch_value = q;
++    this.ksearch_value_last = q;   // Group expansion clears ksearch_value before calling autocomplete_insert trigger, therefore store it in separate variable for later consumption.
+ 
+     // ...string is empty
+     if (!q.length)
+diff --git a/program/steps/mail/autocomplete.inc b/program/steps/mail/autocomplete.inc
+index 38501eb..9c76116 100644
+--- a/program/steps/mail/autocomplete.inc
++++ b/program/steps/mail/autocomplete.inc
+@@ -58,14 +58,14 @@ else {
+     $book_types = (array) $RCMAIL->config->get('autocomplete_addressbooks', 'sql');
+ }
+ 
++$contacts = array();
+ if (!empty($book_types) && strlen($search)) {
+-    $contacts  = array();
+     $sort_keys = array();
+     $books_num = count($book_types);
+     $search_lc = mb_strtolower($search);
+ 
+-    foreach ($book_types as $id) {
+-        $abook = $RCMAIL->get_address_book($id);
++    foreach ($book_types as $abook_id) {
++        $abook = $RCMAIL->get_address_book($abook_id);
+         $abook->set_pagesize($MAXNUM);
+ 
+         if ($result = $abook->search($RCMAIL->config->get('contactlist_fields'), $search, $mode, true, true, 'email')) {
+@@ -92,7 +92,12 @@ if (!empty($book_types) && strlen($search)) {
+ 
+                     // skip duplicates
+                     if (empty($contacts[$index])) {
+-                        $contact = array('name' => $contact, 'type' => $sql_arr['_type']);
++                        $contact = array(
++                            'name'   => $contact,
++                            'type'   => $sql_arr['_type'],
++                            'id'     => $sql_arr['contact_id'],
++                            'source' => $abook_id,
++                        );
+ 
+                         if (($display = rcube_addressbook::compose_search_name($sql_arr, $email, $name)) && $display != $contact['name']) {
+                             $contact['display'] = $display;
+@@ -135,7 +140,7 @@ if (!empty($book_types) && strlen($search)) {
+                                 'email'  => $email,
+                                 'type'   => 'group',
+                                 'id'     => $group['ID'],
+-                                'source' => $id,
++                                'source' => $abook_id,
+                             );
+ 
+                             if (count($contacts) >= $MAXNUM) {
+@@ -152,7 +157,7 @@ if (!empty($book_types) && strlen($search)) {
+                             'name'   => $group['name'] . ' (' . intval($result->count) . ')',
+                             'type'   => 'group',
+                             'id'     => $group['ID'],
+-                            'source' => $id
++                            'source' => $abook_id,
+                         );
+ 
+                         if (count($contacts) >= $MAXNUM) {
+@@ -175,5 +180,14 @@ if (!empty($book_types) && strlen($search)) {
+     }
+ }
+ 
++
++// Allow autocomplete result optimization via plugin
++$pluginResult = $RCMAIL->plugins->exec_hook('contacts_autocomplete_after', array(
++    'search'   => $search,
++    'contacts' => $contacts, // Provide already-found contacts to plugin if they are required
++));
++$contacts = $pluginResult['contacts'];
++
++
+ $OUTPUT->command('ksearch_query_results', $contacts, $search, $reqid);
+ $OUTPUT->send();

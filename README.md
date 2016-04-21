@@ -31,6 +31,9 @@ Whichever RC release has this PR merged: https://github.com/roundcube/roundcubem
 
 Expected to be merged in v1.1.6 and v1.2.0.
 
+Until PR above is merged, you can use patches from [patches/](patches/) directory to prepare
+your Roundcube instance for use with this plugin.
+
 
 
 ## TODO
