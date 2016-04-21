@@ -45,7 +45,6 @@ your Roundcube instance for use with this plugin.
 
 - setting button to remove all learned autocomplete data, so user can start teaching
     RC from scratch at any time
-- implement minimum search string length?
 - define internal behaviour when multiple search string hits for the same contact are present:
 -- delete longer ones as soon as shorter searchstring accepted_count is larger?
 -- ATM they even out eventually. But keeping them pollutes database a little.

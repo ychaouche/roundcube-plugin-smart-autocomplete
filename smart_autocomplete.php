@@ -22,6 +22,13 @@ class smart_autocomplete extends rcube_plugin
 
 
     /**
+     * Do not process search strings shorter than this many characters
+     */
+    public $min_search_string_length = 1;
+
+
+
+    /**
      * Do not autosuggest entries longer than X characters (autocollected noreply addresses)
      */
     public $max_email_length = 40;
@@ -37,8 +44,12 @@ class smart_autocomplete extends rcube_plugin
         $this->dbh = $this->rc->get_dbh();
 
         // Get configuration
-        $this->db_table_name = $this->rc->config->get('db_table_autocomplete', $this->rc->db->table_name($this->db_table_name));
-        $this->max_email_length = $this->rc->config->get('smart_autocomplete_max_email_length', $this->max_email_length);
+        $this->db_table_name            = $this->rc->config->get('db_table_autocomplete', $this->rc->db->table_name($this->db_table_name));
+        $this->max_email_length         = $this->rc->config->get('smart_autocomplete_max_email_length',  $this->max_email_length);
+        $this->min_search_string_length = $this->rc->config->get('smart_autocomplete_min_length', NULL);
+        if (NULL == $this->min_search_string_length) {
+            $this->min_search_string_length = $this->rc->config->get('autocomplete_min_length', 1);
+        }
 
         // Backend tasks
         if ($this->rc->task == 'mail') {
@@ -59,6 +70,11 @@ class smart_autocomplete extends rcube_plugin
     {
         $search_string_unsafe = $args['search'];
         $rc_suggestions       = $args['contacts'];
+
+        // Skip if search string is shorter than what is configured
+        if (strlen($search_string_unsafe) < $this->min_search_string_length) {
+            return $args;
+        }
 
         // Generate array keys for RC suggestions, to be able to remove duplicates when merging
         $rc_suggestions = $this->_rc_suggestions_generate_uniq_ids($rc_suggestions);
@@ -250,6 +266,11 @@ class smart_autocomplete extends rcube_plugin
         $accepted_id     = rcube_utils::get_input_value('accepted_id',     rcube_utils::INPUT_GPC);
         $accepted_email  = rcube_utils::get_input_value('accepted_email',  rcube_utils::INPUT_GPC);
         $accepted_source = rcube_utils::get_input_value('accepted_source', rcube_utils::INPUT_GPC);
+
+        // Skip if search string is shorter than what is configured
+        if (strlen($search_string_unsafe) < $this->min_search_string_length) {
+            return;
+        }
 
         // Validate input
         if (!preg_match('/^.+$/', $search_string)) {
