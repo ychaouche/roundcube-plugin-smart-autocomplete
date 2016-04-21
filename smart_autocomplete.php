@@ -344,13 +344,6 @@ class smart_autocomplete extends rcube_plugin
                 $accepted_source
             );
         }
-
-        /*
-         * THINK TODO:
-         * Check if longer search strings for this entry already exist,
-         * and delete them?
-         * Now they even out eventually. Maybe once shorter prefix accepted_count is larger than longer one?
-         */
     }
 
 
