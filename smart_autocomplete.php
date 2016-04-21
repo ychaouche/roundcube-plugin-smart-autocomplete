@@ -268,7 +268,7 @@ class smart_autocomplete extends rcube_plugin
         $accepted_source = rcube_utils::get_input_value('accepted_source', rcube_utils::INPUT_GPC);
 
         // Skip if search string is shorter than what is configured
-        if (strlen($search_string_unsafe) < $this->min_search_string_length) {
+        if (strlen($search_string) < $this->min_search_string_length) {
             return;
         }
 
