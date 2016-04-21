@@ -49,7 +49,6 @@ your Roundcube instance for use with this plugin.
     RC from scratch at any time
 - check automatic addressbook (autocomplete only works for addresses in address book?)
 - implement minimun search string length?
-- searchstring sanitization before using it in queries
 - define internal behaviour when multiple search string hits for the same contact are present:
 -- delete longer ones as soon as shorter searchstring accepted_count is larger?
 -- ATM they even out eventually. But keeping them pollutes database a little.

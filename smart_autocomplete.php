@@ -57,15 +57,15 @@ class smart_autocomplete extends rcube_plugin
      */
     public function contacts_autocomplete_search ($args)
     {
-        $search_string  = $args['search'];
-        $rc_suggestions = $args['contacts'];
+        $search_string_unsafe = $args['search'];
+        $rc_suggestions       = $args['contacts'];
 
         // Generate array keys for RC suggestions, to be able to remove duplicates when merging
         $rc_suggestions = $this->_rc_suggestions_generate_uniq_ids($rc_suggestions);
 
         // Search for learned autosuggestions
-        $exact_matches  = $this->_search_for_matches($search_string, 'exact');
-        $prefix_matches = $this->_search_for_matches($search_string, 'prefix');
+        $exact_matches  = $this->_search_for_matches($search_string_unsafe, 'exact');
+        $prefix_matches = $this->_search_for_matches($search_string_unsafe, 'prefix');
 
         // Merge final contacts array - later keys do not overwrite earlier ones,
         // effectively shedding duplicates.
@@ -126,14 +126,19 @@ class smart_autocomplete extends rcube_plugin
     /**
      * Do the actual match searching
      */
-    protected function _search_for_matches ($search_string, $mode='exact')
+    protected function _search_for_matches ($search_string_unsafe, $mode='exact')
     {
+        // First protect ourselves
+        $search_string_exact  = $this->rc->db->quote($search_string_unsafe);
+        $search_string_prefix = $this->rc->db->quote($search_string_unsafe . '%');
+
+        // Check for internal inconsistency and/or missing implementation
         switch ($mode) {
             case 'exact':
-                $search_string_query = "search_string = '$search_string'";
+                $search_string_query = "search_string = $search_string_exact";
                 break;
             case 'prefix':
-                $search_string_query = "search_string LIKE '$search_string%' AND search_string != '$search_string'";
+                $search_string_query = "search_string LIKE $search_string_prefix AND search_string != $search_string_exact";
                 break;
             default:
                 throw new Exception("Internal error, invalid search mode: $mode");
