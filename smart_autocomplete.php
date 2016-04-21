@@ -219,21 +219,44 @@ class smart_autocomplete extends rcube_plugin
                     $this->_delete_autocomplete_data('person', $suggestion['accepted_id'], $suggestion['accepted_source']);
                     continue;
                 }
+                $suggested_email = $suggestion['accepted_email'];
 
-                $email = $suggestion['accepted_email'];
-                // FIXME TODO Check if email is still present in the contact, otherwise use default/first one
+
+                // Check if suggested email still exists in contact details
+                $contact_emails        = (array)$abook->get_col_values('email', $contact_data, true);
+                $suggested_email_found = false;
+                foreach ($contact_emails as $c_email) {
+                    if (empty($c_email)) {
+                        continue;
+                    }
+                    if ($c_email == $suggested_email) {
+                        $suggested_email_found = true;
+                        break;
+                    }
+                }
+
+                if (!$suggested_email_found) {
+                    $suggested_email = $this->_update_suggestion_email($suggestion, $contact_emails);
+                    // In case contact currently has no email assigned?
+                    // We keep the data about AC, but ignore it for now.
+                    if (empty($suggested_email)) {
+                        continue;
+                    }
+                }
+                // Finally we have trusted email address
+
 
                 // Ignore contacts with too long emails
-                if (strlen($email) > $this->max_email_length) {
+                if (strlen($suggested_email) > $this->max_email_length) {
                     continue;
                 }
 
                 // Format contact
-                $contact_name = format_email_recipient($email, $name_search);
+                $contact_name = format_email_recipient($suggested_email, $name_search);
                 $contact = array(
                     'type'   => 'person',
                     'name'   => $contact_name,
-                    'email'  => $email,
+                    'email'  => $suggested_email,
                     'id'     => $suggestion['accepted_id'],
                     'source' => $suggestion['accepted_source'],
                 );
@@ -252,6 +275,74 @@ class smart_autocomplete extends rcube_plugin
         }
 
         return $contacts;
+    }
+
+
+
+    /**
+     * Update suggestion email
+     *
+     * Uses first non-empty email address from contact
+     *
+     * @param    array    Suggestion data
+     * @param    array    Contact emails
+     * @return   string   Newly selected email address
+     */
+    protected function _update_suggestion_email ($suggestion_data, $contact_emails)
+    {
+        $new_email = NULL;
+
+        foreach ($contact_emails as $c_email) {
+            if (!empty($c_email)) {
+                $new_email = $c_email;
+                break;
+            }
+        }
+
+        // If none found, return
+        if (NULL == $new_email) {
+            return NULL;
+        }
+
+        // First update matching entry
+        $this->rc->db->query("
+                UPDATE
+                    ". $this->db_table_name ."
+                SET
+                    accepted_email = ?
+                WHERE 1
+                    AND id = ?
+                    AND user_id = ?
+            ",
+            $new_email,
+            $suggestion_data['id'],
+            $this->rc->user->ID
+        );
+
+        // Then update all other matching entries too
+        $this->rc->db->query("
+                UPDATE
+                    ". $this->db_table_name ."
+                SET
+                    accepted_email = ?
+                WHERE 1
+                    AND accepted_type   = ?
+                    AND accepted_source = ?
+                    AND accepted_id     = ?
+                    AND accepted_email  = ?
+                    AND user_id = ?
+            ",
+            $new_email,
+            $suggestion_data['accepted_type'],
+            $suggestion_data['accepted_source'],
+            $suggestion_data['accepted_id'],
+            $suggestion_data['accepted_email'],
+            $this->rc->user->ID
+        );
+
+        // Now remove any stale entries for this contact/email combo
+
+        return $new_email;
     }
 
 
