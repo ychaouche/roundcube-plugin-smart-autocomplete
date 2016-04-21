@@ -44,7 +44,7 @@ class smart_autocomplete extends rcube_plugin
         $this->dbh = $this->rc->get_dbh();
 
         // Get configuration
-        $this->db_table_name            = $this->rc->config->get('db_table_autocomplete', $this->rc->db->table_name($this->db_table_name));
+        $this->db_table_name            = $this->rc->config->get('smart_autocomplete_db_table_name', $this->rc->db->table_name($this->db_table_name));
         $this->max_email_length         = $this->rc->config->get('smart_autocomplete_max_email_length',  $this->max_email_length);
         $this->min_search_string_length = $this->rc->config->get('smart_autocomplete_min_length', NULL);
         if (NULL == $this->min_search_string_length) {
