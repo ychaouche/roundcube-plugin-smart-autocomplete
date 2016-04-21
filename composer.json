@@ -1,7 +1,7 @@
 {
     "name": "teon/smart_autocomplete",
     "type": "roundcube-plugin",
-    "description": "Find your recipients faster by optimizing autocomplete order",
+    "description": "Self-learning autocomplete algorithm that optimizes order of suggested recipients by analysing your previously accepted autocomplete suggestions.",
     "homepage": "https://github.com/teonsystems/roundcube-plugin-smart-autocomplete/",
     "license": "AGPL-3.0",
     "authors": [
