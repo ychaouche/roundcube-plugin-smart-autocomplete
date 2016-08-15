@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `smart_autocomplete` (
   `accepted_datetime_last` datetime NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `user_id` (`user_id`),
-  INDEX `search_string` (`search_string`);
+  INDEX `search_string` (`search_string`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 REPLACE INTO system (name, value) VALUES ('smart-autocomplete-database-version', '2016041500');
