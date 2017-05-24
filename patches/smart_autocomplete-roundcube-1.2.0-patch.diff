@@ -59,8 +59,8 @@ index 3023ecf..31480ca 100644
 -                        $contact = array('name' => $contact, 'type' => $sql_arr['_type']);
 +                        $contact = array(
 +                            'name'   => $contact,
-+                            'type'   => $record['_type'],
-+                            'id'     => $record['contact_id'],
++                            'type'   => $sql_arr['_type'],
++                            'id'     => $sql_arr['contact_id'],
 +                            'source' => $abook_id,
 +                        );
  
